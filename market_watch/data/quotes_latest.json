@@ -1,0 +1,212 @@
+{
+  "meta": {
+    "generated_at": "2026-06-22T05:33:51.693250+00:00",
+    "snapshot_date": "2026-06-22",
+    "snapshot_type": "intraday",
+    "sources": [
+      "yahoo",
+      "alpha_vantage",
+      "cn_feeds"
+    ],
+    "source_status": [
+      {
+        "source": "yahoo",
+        "ok": false,
+        "error": "<urlopen error timed out>"
+      },
+      {
+        "source": "alpha_vantage",
+        "ok": false,
+        "error": "missing_api_key"
+      },
+      {
+        "source": "cn_feeds",
+        "ok": false,
+        "error": "not_hit"
+      }
+    ],
+    "status": "degraded"
+  },
+  "quotes": [
+    {
+      "category": "semiconductor",
+      "category_display": "半导体",
+      "symbol": "SOXX",
+      "price": null,
+      "prev_close": null,
+      "change_pct": null,
+      "volume": null,
+      "timestamp": null,
+      "currency": "",
+      "source": "missing"
+    },
+    {
+      "category": "semiconductor",
+      "category_display": "半导体",
+      "symbol": "NVDA",
+      "price": null,
+      "prev_close": null,
+      "change_pct": null,
+      "volume": null,
+      "timestamp": null,
+      "currency": "",
+      "source": "missing"
+    },
+    {
+      "category": "semiconductor",
+      "category_display": "半导体",
+      "symbol": "TSM",
+      "price": null,
+      "prev_close": null,
+      "change_pct": null,
+      "volume": null,
+      "timestamp": null,
+      "currency": "",
+      "source": "missing"
+    },
+    {
+      "category": "semiconductor",
+      "category_display": "半导体",
+      "symbol": "ASML",
+      "price": null,
+      "prev_close": null,
+      "change_pct": null,
+      "volume": null,
+      "timestamp": null,
+      "currency": "",
+      "source": "missing"
+    },
+    {
+      "category": "ai_compute",
+      "category_display": "AI算力",
+      "symbol": "NVDA",
+      "price": null,
+      "prev_close": null,
+      "change_pct": null,
+      "volume": null,
+      "timestamp": null,
+      "currency": "",
+      "source": "missing"
+    },
+    {
+      "category": "ai_compute",
+      "category_display": "AI算力",
+      "symbol": "AMD",
+      "price": null,
+      "prev_close": null,
+      "change_pct": null,
+      "volume": null,
+      "timestamp": null,
+      "currency": "",
+      "source": "missing"
+    },
+    {
+      "category": "ai_compute",
+      "category_display": "AI算力",
+      "symbol": "SMCI",
+      "price": null,
+      "prev_close": null,
+      "change_pct": null,
+      "volume": null,
+      "timestamp": null,
+      "currency": "",
+      "source": "missing"
+    },
+    {
+      "category": "ai_compute",
+      "category_display": "AI算力",
+      "symbol": "QQQ",
+      "price": null,
+      "prev_close": null,
+      "change_pct": null,
+      "volume": null,
+      "timestamp": null,
+      "currency": "",
+      "source": "missing"
+    },
+    {
+      "category": "energy",
+      "category_display": "能源",
+      "symbol": "CL=F",
+      "price": null,
+      "prev_close": null,
+      "change_pct": null,
+      "volume": null,
+      "timestamp": null,
+      "currency": "",
+      "source": "missing"
+    },
+    {
+      "category": "energy",
+      "category_display": "能源",
+      "symbol": "BZ=F",
+      "price": null,
+      "prev_close": null,
+      "change_pct": null,
+      "volume": null,
+      "timestamp": null,
+      "currency": "",
+      "source": "missing"
+    },
+    {
+      "category": "energy",
+      "category_display": "能源",
+      "symbol": "XLE",
+      "price": null,
+      "prev_close": null,
+      "change_pct": null,
+      "volume": null,
+      "timestamp": null,
+      "currency": "",
+      "source": "missing"
+    },
+    {
+      "category": "energy",
+      "category_display": "能源",
+      "symbol": "ICLN",
+      "price": null,
+      "prev_close": null,
+      "change_pct": null,
+      "volume": null,
+      "timestamp": null,
+      "currency": "",
+      "source": "missing"
+    },
+    {
+      "category": "gold",
+      "category_display": "黄金",
+      "symbol": "GC=F",
+      "price": null,
+      "prev_close": null,
+      "change_pct": null,
+      "volume": null,
+      "timestamp": null,
+      "currency": "",
+      "source": "missing"
+    },
+    {
+      "category": "gold",
+      "category_display": "黄金",
+      "symbol": "XAUUSD=X",
+      "price": null,
+      "prev_close": null,
+      "change_pct": null,
+      "volume": null,
+      "timestamp": null,
+      "currency": "",
+      "source": "missing"
+    },
+    {
+      "category": "gold",
+      "category_display": "黄金",
+      "symbol": "GLD",
+      "price": null,
+      "prev_close": null,
+      "change_pct": null,
+      "volume": null,
+      "timestamp": null,
+      "currency": "",
+      "source": "missing"
+    }
+  ]
+}

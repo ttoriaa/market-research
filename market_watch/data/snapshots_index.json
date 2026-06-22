@@ -1,0 +1,10 @@
+{
+  "generated_at": "2026-06-22T05:34:22.376769+00:00",
+  "snapshots": [
+    {
+      "date": "2026-06-22",
+      "file": "market_watch/data/history/2026-06-22/quotes.json",
+      "snapshot_type": "intraday"
+    }
+  ]
+}
