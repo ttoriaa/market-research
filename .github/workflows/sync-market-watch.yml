@@ -61,7 +61,21 @@ jobs:
           if [ "$(echo "${SKIP_NEWS}" | tr '[:upper:]' '[:lower:]')" = "true" ]; then
             ARGS="${ARGS} --skip-news"
           fi
-          python scripts/update_market_watch_data.py ${ARGS}
+          python scripts/update_market_watch_data.py ${ARGS} > run_report.json
+          cat run_report.json
+
+      - name: Guard empty snapshot
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path("run_report.json").read_text(encoding="utf-8"))
+          usable_prices = int(report.get("usable_prices") or 0)
+          if usable_prices <= 0:
+              raise SystemExit("No usable prices fetched (usable_prices=0). Failing to avoid committing empty data.")
+          print(f"usable_prices={usable_prices}")
+          PY
 
       - name: Commit changes
         run: |

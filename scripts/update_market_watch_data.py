@@ -358,6 +358,10 @@ def has_usable_prices(rows: list[dict[str, Any]]) -> bool:
     return any(safe_float(r.get("price")) is not None for r in rows if isinstance(r, dict))
 
 
+def count_usable_prices(rows: list[dict[str, Any]]) -> int:
+    return sum(1 for r in rows if isinstance(r, dict) and safe_float(r.get("price")) is not None)
+
+
 def load_snapshot_quotes(date_str: str) -> list[dict[str, Any]]:
     path = HISTORY_ROOT / date_str / "quotes.json"
     payload = load_json(path)
@@ -828,6 +832,7 @@ def main() -> int:
         "snapshot_date": snapshot_date,
         "snapshot_type": args.snapshot_type,
         "quotes_count": len(quotes),
+        "usable_prices": count_usable_prices(quotes),
         "alerts_count": len(alerts),
         "digest_sections": len(digest_sections),
         "notify": notify_result,
