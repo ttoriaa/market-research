@@ -1,0 +1,14 @@
+{
+  "intraday": {
+    "daily_move_abs_pct": 2.0,
+    "breakout_window_days": 20,
+    "volume_spike_multiple": 1.8,
+    "min_history_for_volume": 5
+  },
+  "post_close": {
+    "daily_move_abs_pct": 1.5,
+    "breakout_window_days": 20,
+    "volume_spike_multiple": 1.5,
+    "min_history_for_volume": 5
+  }
+}
