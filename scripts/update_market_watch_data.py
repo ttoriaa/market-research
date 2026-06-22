@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import datetime as dt
 import hashlib
 import html
@@ -152,26 +153,73 @@ def fetch_yahoo_quotes(symbols: list[str], request_timeout: int = 12) -> tuple[d
         return {}, [source_status("yahoo", True)]
 
     url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" + quote_plus(",".join(symbols))
+    last_error = ""
+    for attempt in range(1, 4):
+        try:
+            payload = fetch_json(url, timeout=request_timeout)
+            results = payload.get("quoteResponse", {}).get("result", [])
+            out: dict[str, dict[str, Any]] = {}
+            for item in results:
+                symbol = str(item.get("symbol", "")).strip()
+                if not symbol:
+                    continue
+                out[symbol] = {
+                    "price": safe_float(item.get("regularMarketPrice")),
+                    "prev_close": safe_float(item.get("regularMarketPreviousClose")),
+                    "change_pct": safe_float(item.get("regularMarketChangePercent")),
+                    "volume": safe_float(item.get("regularMarketVolume")),
+                    "timestamp": int(item.get("regularMarketTime") or 0),
+                    "currency": str(item.get("currency") or ""),
+                    "source": "yahoo",
+                }
+            return out, [source_status("yahoo", True)]
+        except (HTTPError, URLError, json.JSONDecodeError) as exc:
+            last_error = str(exc)
+            if attempt < 3:
+                time.sleep(0.8 * attempt)
+    return {}, [source_status("yahoo", False, last_error or "unknown")]
+
+
+def fetch_stooq_quote(symbol: str, request_timeout: int = 12) -> dict[str, Any] | None:
+    mapping = {
+        "SOXX": "soxx.us",
+        "NVDA": "nvda.us",
+        "TSM": "tsm.us",
+        "ASML": "asml.us",
+        "AMD": "amd.us",
+        "SMCI": "smci.us",
+        "QQQ": "qqq.us",
+        "XLE": "xle.us",
+        "ICLN": "icln.us",
+        "GLD": "gld.us",
+    }
+    code = mapping.get(symbol)
+    if not code:
+        return None
+
+    url = f"https://stooq.com/q/l/?s={quote_plus(code)}&f=sd2t2ohlcv&h&e=csv"
     try:
-        payload = fetch_json(url, timeout=request_timeout)
-        results = payload.get("quoteResponse", {}).get("result", [])
-        out: dict[str, dict[str, Any]] = {}
-        for item in results:
-            symbol = str(item.get("symbol", "")).strip()
-            if not symbol:
-                continue
-            out[symbol] = {
-                "price": safe_float(item.get("regularMarketPrice")),
-                "prev_close": safe_float(item.get("regularMarketPreviousClose")),
-                "change_pct": safe_float(item.get("regularMarketChangePercent")),
-                "volume": safe_float(item.get("regularMarketVolume")),
-                "timestamp": int(item.get("regularMarketTime") or 0),
-                "currency": str(item.get("currency") or ""),
-                "source": "yahoo",
-            }
-        return out, [source_status("yahoo", True)]
-    except (HTTPError, URLError, json.JSONDecodeError) as exc:
-        return {}, [source_status("yahoo", False, str(exc))]
+        text = fetch_text(url, timeout=request_timeout)
+    except Exception:
+        return None
+
+    rows = list(csv.DictReader(text.splitlines()))
+    if not rows:
+        return None
+    item = rows[0]
+    price = safe_float(item.get("Close"))
+    if price is None:
+        return None
+    volume = safe_float(item.get("Volume"))
+    return {
+        "price": price,
+        "prev_close": None,
+        "change_pct": None,
+        "volume": volume,
+        "timestamp": 0,
+        "currency": "USD",
+        "source": "stooq",
+    }
 
 
 def fetch_alpha_vantage_quote(symbol: str, request_timeout: int = 12) -> dict[str, Any] | None:
@@ -256,6 +304,7 @@ def merge_quotes(category_map: dict[str, list[str]], request_timeout: int = 12) 
 
     rows: list[dict[str, Any]] = []
     used_alpha = False
+    used_stooq = False
     used_cn = False
 
     for category, category_symbols in category_map.items():
@@ -266,6 +315,11 @@ def merge_quotes(category_map: dict[str, list[str]], request_timeout: int = 12) 
                 if fallback:
                     row = fallback
                     used_alpha = True
+            if not row.get("price"):
+                stooq_fallback = fetch_stooq_quote(symbol, request_timeout=request_timeout)
+                if stooq_fallback:
+                    row = stooq_fallback
+                    used_stooq = True
             if not row.get("price"):
                 cn_fallback = fetch_cn_quote(symbol, request_timeout=request_timeout)
                 if cn_fallback:
@@ -294,8 +348,14 @@ def merge_quotes(category_map: dict[str, list[str]], request_timeout: int = 12) 
     else:
         statuses.append(source_status("alpha_vantage", False, "missing_api_key"))
 
+    statuses.append(source_status("stooq", used_stooq, "fallback_only" if used_stooq else "not_hit"))
+
     statuses.append(source_status("cn_feeds", used_cn, "fallback_only" if used_cn else "not_hit"))
     return rows, statuses
+
+
+def has_usable_prices(rows: list[dict[str, Any]]) -> bool:
+    return any(safe_float(r.get("price")) is not None for r in rows if isinstance(r, dict))
 
 
 def load_snapshot_quotes(date_str: str) -> list[dict[str, Any]]:
@@ -670,6 +730,17 @@ def main() -> int:
     snapshot_date = args.snapshot_date.strip() or now.date().isoformat()
 
     quotes, source_states = merge_quotes(CATEGORY_SYMBOLS, request_timeout=args.request_timeout)
+    stale_fallback_used = False
+    stale_from_date = ""
+    previous_latest = load_json(LATEST_QUOTES) or {}
+    previous_quotes = previous_latest.get("quotes") if isinstance(previous_latest, dict) else []
+    previous_meta = previous_latest.get("meta") if isinstance(previous_latest, dict) else {}
+    if isinstance(previous_quotes, list) and not has_usable_prices(quotes) and has_usable_prices(previous_quotes):
+        quotes = [q for q in previous_quotes if isinstance(q, dict)]
+        stale_fallback_used = True
+        if isinstance(previous_meta, dict):
+            stale_from_date = str(previous_meta.get("snapshot_date") or "")
+        source_states.append(source_status("local_latest_fallback", True, "reused_last_valid_quotes"))
     index_payload = upsert_snapshot_index(
         SNAPSHOT_INDEX,
         snapshot_date,
@@ -689,7 +760,8 @@ def main() -> int:
             "snapshot_type": args.snapshot_type,
             "sources": [s.get("source") for s in source_states],
             "source_status": source_states,
-            "status": "ok" if any(s.get("ok") for s in source_states) else "degraded",
+            "status": "stale_fallback" if stale_fallback_used else ("ok" if any(s.get("ok") for s in source_states) else "degraded"),
+            "stale_from_snapshot_date": stale_from_date,
         },
         "quotes": quotes,
     }
