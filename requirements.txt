@@ -1,0 +1,2 @@
+# Minimal runtime dependencies for market-research.
+# Current pipeline relies on Python standard library only.

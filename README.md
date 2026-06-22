@@ -37,8 +37,17 @@ A static market monitoring site for daily tracking of:
 
 ## Quick Start
 
-1. Create virtual environment and install dependencies (none required beyond Python stdlib currently).
-2. Configure env vars from `.env.example`.
+1. One-click initialize (PowerShell):
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+Copy-Item .env.example .env -Force
+```
+
+2. Configure env vars in `.env` as needed.
 3. Run local dry-run:
 
 ```powershell
@@ -59,3 +68,4 @@ A static market monitoring site for daily tracking of:
 
 - For Feishu notifications, set `FEISHU_MARKET_WEBHOOK`.
 - Alert thresholds are in `market_watch/alert_rules.json`.
+- GitHub Pages workflow publishes `market_watch/` to `https://ttoriaa.github.io/market-research/`.
